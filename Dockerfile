@@ -8,7 +8,7 @@ zip \
 unzip \
 RUN systemctl start httpd
 RUN systemctl enable  httpd
-ADD https://www.free-css.com/assets/files/free-css-templates/download/page291/carserv.zip/www/html
+ADD https://www.free-css.com/assets/files/free-css-templates/download/page291/carserv.zip /www/html
 WORKDIR /var/www/html
 RUN unzip carserv.zip
 RUN cp -rvf car-repair-html-template/* .
