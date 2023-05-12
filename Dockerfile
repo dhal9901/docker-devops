@@ -6,8 +6,7 @@ RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|
 RUN yum install httpd -y \
 zip \
 unzip 
-RUN systemctl start httpd
-RUN systemctl enable  httpd
+
 ADD https://www.free-css.com/assets/files/free-css-templates/download/page291/carserv.zip /www/html
 WORKDIR /var/www/html
 RUN unzip carserv.zip
