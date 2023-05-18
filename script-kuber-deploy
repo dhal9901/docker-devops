@@ -1,0 +1,114 @@
+pipeline {
+    agent any
+
+    stages {
+         stage('git checkout') {
+            steps {
+                
+            git branch: 'main', url: 'https://github.com/dhal9901/docker-devops.git'
+
+            }
+         }
+        stage('copy files to ansible'){
+        steps{
+        sshagent(['jenkin-ssh']) {
+    // some block
+
+    sh 'ssh -o StrictHostKeyChecking=no  root@172.31.4.55 '
+  sh ' scp -r -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/script-kuber/* root@172.31.4.55:/root/'
+  
+   
+        }
+     }
+  }
+   stage('docker build image'){
+        steps{
+        sshagent(['jenkin-ssh']) {
+    // some block
+
+    
+    sh 'ssh -o StrictHostKeyChecking=no  root@172.31.4.55 cd /root/'
+     sh 'ssh -o StrictHostKeyChecking=no   root@172.31.4.55 docker image build -t $JOB_NAME:v1.$BUILD_ID .'
+      
+        }
+}
+}
+stage('docker  image TAG'){
+        steps{
+        sshagent(['jenkin-ssh']) {
+    // some block
+
+    
+    sh 'ssh -o StrictHostKeyChecking=no  root@172.31.4.55 cd /root/'
+     sh 'ssh -o StrictHostKeyChecking=no   root@172.31.4.55 docker image tag  $JOB_NAME:v1.$BUILD_ID biplab1995/$JOB_NAME:v1.$BUILD_ID'
+   sh 'ssh -o StrictHostKeyChecking=no   root@172.31.4.55 docker image tag  $JOB_NAME:v1.$BUILD_ID biplab1995/$JOB_NAME:latest'
+     
+  
+   
+        }
+}
+}
+stage('docker  image push'){
+        steps{
+        sshagent(['jenkin-ssh']) {
+            withCredentials([usernamePassword(credentialsId: 'docker-cred', passwordVariable: 'dockerpasswd', usernameVariable: 'dockeruser')]) {
+    // some block
+
+         
+
+    
+    sh 'ssh -o StrictHostKeyChecking=no  root@172.31.4.55 docker login -u ${dockeruser} -p ${dockerpasswd}'
+    sh 'ssh -o StrictHostKeyChecking=no   root@172.31.4.55 docker image push biplab1995/$JOB_NAME:v1.$BUILD_ID'
+   sh 'ssh -o StrictHostKeyChecking=no   root@172.31.4.55 docker image push biplab1995/$JOB_NAME:latest'
+     
+  
+         } 
+
+        }
+        
+    
+}
+
+}
+stage('docker  image remove'){
+        steps{
+        sshagent(['jenkin-ssh']) {
+         
+
+    
+    sh 'ssh -o StrictHostKeyChecking=no  root@172.31.4.55 cd /root/ '
+     sh 'ssh -o StrictHostKeyChecking=no   root@172.31.4.55 docker rmi $JOB_NAME:v1.$BUILD_ID biplab1995/$JOB_NAME:v1.$BUILD_ID biplab1995/$JOB_NAME:latest'
+     
+  
+         } 
+
+       
+        
+    
+}
+
+}
+
+
+stage('deploy on kubernetes'){
+        steps{
+        sshagent(['jenkin-ssh']) {
+         
+
+    
+    sh 'ssh -o StrictHostKeyChecking=no  root@172.31.4.55 cd /root/ '
+     sh 'ssh -o StrictHostKeyChecking=no  root@172.31.4.55 ansible-playbook /opt/ansible.yml'
+     
+  
+         } 
+
+       
+        
+    
+}
+
+}
+
+
+}
+}
