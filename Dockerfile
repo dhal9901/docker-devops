@@ -11,5 +11,5 @@ WORKDIR /var/www/html
 RUN unzip carserv.zip
 RUN cp -rvf car-repair-html-template/* .
 RUN rm -rf car-repair-html-template carserv.zip
-CMD ["/usr/sbin/httpd", "-D","FOREGROUND]
+CMD ["/usr/sbin/httpd", "-D","FOREGROUND"]
 EXPOSE 80
